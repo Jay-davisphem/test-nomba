@@ -47,13 +47,13 @@ export default function BankTransfer() {
             }
             
         </datalist>
-        <button className="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 bg-blue-500 text-white mb-4" type="button" onClick={async () => {
+        <button className="p-2 bg-blue-500 text-white mb-4" type="button" onClick={async () => {
             const res = await api.post('/transfers/bank/lookup', {accountNumber, bankCode: bank})
             if (res.data?.code === '00'){
                 setAccountName(res.data?.data?.accountName)
             }
             
-        }} disabled={accountName}>VERIFY</button>
+        }}>VERIFY</button>
         <input className="p-2 border mb-4" placeholder="Account Name" value={accountName} readOnly />
         <input className="p-2 border mb-4" placeholder="Enter Amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
         <button className="p-2 bg-green-500 text-white" type="button" onClick={async () => {
