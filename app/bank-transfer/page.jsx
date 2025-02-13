@@ -1,18 +1,21 @@
 'use client'
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import axios from 'redaxios'
+import api from "../_services/axiosInstance";
+
 
 const fetchBanks = async () => {
-    const res = await axios.get('https://api.nomba.com/v1/transfers/banks', {headers: {
-     Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOMBA_CLIENT_ID}`,
-     accountId: process.env.NEXT_PUBLIC_NOMBA_ACCOUNT_ID   
-    }})
-    console.log(res.data, 'res.data')
-    if(res.data.code === '00'){
-        return res.data.data.results
-    } else {
-        throw new Error(res.data.description)
+    try {
+
+        const res = await api.get('/transfers/banks')
+        console.log(res, 'responses')
+        if(res.data.code === '00'){
+            return res.data.data
+        } else {
+            throw new Error(res.data.description)
+        }
+    } catch(err){
+        console.log(err, 'err')
     }
 }
 
@@ -38,16 +41,35 @@ export default function BankTransfer() {
         <input className="p-2 border mb-4" placeholder="Select Bank" value={bank} onChange={(e) => setBank(e.target.value)} list="banks-list"/>
         <datalist id="banks-list">
             {
-                banks?.map((bank) => {
-                    return <option value={bank?.code}>{bank.name}</option>
+                banks?.map((bank, index) => {
+                    return <option key={`${bank.code}-${index}`} value={bank?.code}>{bank.name}</option>
                 })
             }
             
         </datalist>
-        <button className="p-2 bg-blue-500 text-white mb-4">VERIFY</button>
+        <button className="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 bg-blue-500 text-white mb-4" type="button" onClick={async () => {
+            const res = await api.post('/transfers/bank/lookup', {accountNumber, bankCode: bank})
+            if (res.data?.code === '00'){
+                setAccountName(res.data?.data?.accountName)
+            }
+            
+        }} disabled={accountName}>VERIFY</button>
         <input className="p-2 border mb-4" placeholder="Account Name" value={accountName} readOnly />
         <input className="p-2 border mb-4" placeholder="Enter Amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
-        <button className="p-2 bg-green-500 text-white">TRANSFER</button>
+        <button className="p-2 bg-green-500 text-white" type="button" onClick={async () => {
+            const res = await api.post('/transfers/bank', {
+                accountNumber, bankCode: bank,
+                amount: amount,
+                accountName,
+                merchantTxRef: `TX_${Date.now()}`,
+                narration: `Sending ${amount} to ${accountName}`,
+                senderName: 'Nomba client app'
+            })
+            console.log(res.data, 'res.data')
+            if (res.data?.code === '00'){
+                alert(`Transfer Successfully made to ${accountName}`)
+            }
+        }}>TRANSFER</button>
         <button className="p-2 bg-blue-500 text-white mt-4" type='button' onClick={() => {
             router.push('/')
         }}>HOME</button>
