@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getAccessToken, refreshAccessToken } from './authServices';
 
 const apiInstance = axios.create({
-    baseURL: 'https://sandbox.nomba.com/v1',
+    baseURL: 'https://api.nomba.com/v1',
     headers: {
       'Content-Type': 'application/json',
       accountId: process.env.NEXT_PUBLIC_NOMBA_ACCOUNT_ID,
